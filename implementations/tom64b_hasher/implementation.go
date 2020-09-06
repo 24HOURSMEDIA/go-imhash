@@ -5,8 +5,8 @@ package tom64b_hasher
 import (
 	"errors"
 	"fmt"
-	"github.com/24HOURSMEDIA/go-imhash"
 	"github.com/24HOURSMEDIA/go-imhash/environment"
+	"github.com/24HOURSMEDIA/go-imhash/interfaces"
 	"github.com/24HOURSMEDIA/go-imhash/util"
 	"github.com/google/uuid"
 	"github.com/tmthrgd/go-popcount"
@@ -53,13 +53,13 @@ func (imp Implementation) Handle() string {
 }
 
 // HashFromPath creates a hash from an image file at the given path
-func (imp Implementation) HashFromPath(path string) (imhash.PerceptualHash, error) {
+func (imp Implementation) HashFromPath(path string) (interfaces.PerceptualHash, error) {
 	return imp.newHashFromFileWithImagick(path)
 }
 
 // HashFromString recreates a hash from a hash string
 // use it to recreate a hash from a stored value
-func (imp Implementation) HashFromString(hashAsString string) (imhash.PerceptualHash, error) {
+func (imp Implementation) HashFromString(hashAsString string) (interfaces.PerceptualHash, error) {
 	decimal, err := strconv.ParseUint(hashAsString, 16, 64)
 	if err != nil {
 		return nil, err
@@ -70,7 +70,7 @@ func (imp Implementation) HashFromString(hashAsString string) (imhash.Perceptual
 }
 
 // Distance calculates the hamming distance between two hashes
-func (imp Implementation) Distance(h1 imhash.PerceptualHash, h2 imhash.PerceptualHash) (imhash.HammingDistance, error) {
+func (imp Implementation) Distance(h1 interfaces.PerceptualHash, h2 interfaces.PerceptualHash) (interfaces.HammingDistance, error) {
 	hash1 := h1.(tom64bHash)
 	hash2 := h2.(tom64bHash)
 	result := 0
@@ -81,12 +81,12 @@ func (imp Implementation) Distance(h1 imhash.PerceptualHash, h2 imhash.Perceptua
 			result += distanceCounts[v1^v2]
 		}
 	}
-	return imhash.HammingDistance(result), nil
+	return interfaces.HammingDistance(result), nil
 }
 
 // newHashFromGrayScaleMatrix creates a DHash from a 9x8 matrix object
 // with grayscale values
-func (imp Implementation) newHashFromGrayScaleMatrix(matrix util.GrayScaleMatrix) (imhash.PerceptualHash, error) {
+func (imp Implementation) newHashFromGrayScaleMatrix(matrix util.GrayScaleMatrix) (interfaces.PerceptualHash, error) {
 	var hash = uint64(0)
 	var bit = uint64(1)
 	bitCount := uint(0)
@@ -106,14 +106,14 @@ func (imp Implementation) newHashFromGrayScaleMatrix(matrix util.GrayScaleMatrix
 }
 
 // newHashFromPreparedImage creates an image hash from a 9x8 image object in colour.
-func (imp Implementation) newHashFromPreparedImage(image image.Image) (imhash.PerceptualHash, error) {
+func (imp Implementation) newHashFromPreparedImage(image image.Image) (interfaces.PerceptualHash, error) {
 	matrix := util.CreateGrayscaleMap(image, util.NewBT601Weights())
 	return imp.newHashFromGrayScaleMatrix(matrix)
 }
 
 // newHashFromPreparedFile creates an image hash from a prepared file at the specified path
 // The prepared file must be a 9x8 png image in colour
-func (imp Implementation) newHashFromPreparedFile(path string) (imhash.PerceptualHash, error) {
+func (imp Implementation) newHashFromPreparedFile(path string) (interfaces.PerceptualHash, error) {
 	// Read image from file that already exists
 	imageFile, err := os.Open(path)
 	if err != nil {
@@ -128,7 +128,7 @@ func (imp Implementation) newHashFromPreparedFile(path string) (imhash.Perceptua
 }
 
 // newHashFromFileWithImagick creates a hash from an image file using the image magick convert utility
-func (imp Implementation) newHashFromFileWithImagick(sourcePath string) (imhash.PerceptualHash, error) {
+func (imp Implementation) newHashFromFileWithImagick(sourcePath string) (interfaces.PerceptualHash, error) {
 	targetPath := filepath.Join(environment.WorkDir, uuid.New().String()+".png")
 	// see: http://www.imagemagick.org/Usage/filter/
 	output, err := exec.Command("convert", sourcePath, "-filter", "box", "-resize", "9x8!", targetPath).CombinedOutput()

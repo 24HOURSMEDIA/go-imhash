@@ -1,15 +1,10 @@
-# GO-DHASH
+# GO-IMHASH
 
-Calculate fast image distance hash in Go.
+Calculate perceptual image distance hash in Go.
 
-Requires Imagick to be installed (with the 'convert' command line tool).
+## Requirements
 
-Adapted from: https://github.com/Tom64b/dHash,
-see: 
-* http://www.hackerfactor.com/blog/?/archives/529-Kind-of-Like-That.html
-* https://github.com/jenssegers/imagehash/
-
-Foto door Jeremy Bishop via Pexels
+- ImageMagick convert command line utility
 
 ## Example
 
@@ -18,11 +13,12 @@ package main
 
 import (
 	"fmt"
-    "github.com/24HOURSMEDIA/go-dhash/implementations/tom64b_hasher"
+    "github.com/24HOURSMEDIA/go-imhash"
 )
 
 func main() {
-    // show hashed values and calculate distance hasher := tom64b_hasher.Create()
+    // show hashed values and calculate distance 
+	hasher, _ := imhash.CreateService("tom64b")
 
     imgPath1 := "./image1.jpg"
     imgPath2 := "./image2.jpg"
@@ -44,3 +40,12 @@ func main() {
 ```
 go test github.com/24HOURSMEDIA/go-imhash/implementations/tom64b_hasher
 ```
+
+## Credits
+
+Adapted from: https://github.com/Tom64b/dHash,
+see: 
+* http://www.hackerfactor.com/blog/?/archives/529-Kind-of-Like-That.html
+* https://github.com/jenssegers/imagehash/
+
+Foto door Jeremy Bishop via Pexels

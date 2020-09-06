@@ -1,4 +1,4 @@
-package imhash
+package interfaces
 
 // PerceptualHash represents the hash of an image
 type PerceptualHash interface {
