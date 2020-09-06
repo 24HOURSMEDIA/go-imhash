@@ -1,6 +1,11 @@
 # GO-IMHASH
 
-Calculate perceptual image distance hash in Go.
+Library to calculate perceptual image distance hash in Go.
+
+See https://github.com/24HOURSMEDIA/go-imhash-cmd for a command line utility
+to generate images.
+
+Supports the fast dhash algorithm adapted from https://github.com/Tom64b/dHash
 
 ## Requirements
 
