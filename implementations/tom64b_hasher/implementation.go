@@ -1,5 +1,5 @@
 // Package tom64b_hasher is a perceptual image hashing Implementation based on
-// the php Implementation at https://github.com/Tom64b/dHash
+// the algorithm written in php at https://github.com/Tom64b/dHash
 package tom64b_hasher
 
 import (
