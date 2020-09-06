@@ -1,4 +1,4 @@
-package interfaces
+package imhash_interfaces
 
 // PerceptualHash represents the hash of an image
 type PerceptualHash interface {
@@ -13,7 +13,7 @@ type PerceptualHashImplementation interface {
 
 	// Handle returns a canonical name for the hashing service
 	// use it so you can refer to the specific algorithm later
-	Handle() string
+	GetHandle() string
 
 	// HashFromPath creates a hash from an image file at the given path
 	HashFromPath(path string) (PerceptualHash, error)
