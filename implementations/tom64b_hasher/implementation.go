@@ -10,6 +10,7 @@ import (
 	"github.com/24HOURSMEDIA/go-imhash/util"
 	"github.com/google/uuid"
 	"github.com/tmthrgd/go-popcount"
+	"gopkg.in/gographics/imagick.v3/imagick"
 	"image"
 	"image/png"
 	"os"
@@ -41,11 +42,12 @@ func (hash tom64bHash) PopCount() uint {
 
 // Implementation is the specific Implementation of the hashing service
 type Implementation struct {
+	Config Config
 }
 
 // Create creates a new instance of the hashing service
 func Create() Implementation {
-	return Implementation{}
+	return Implementation{Config: NewConfig()}
 }
 
 func (imp Implementation) GetHandle() string {
@@ -54,7 +56,11 @@ func (imp Implementation) GetHandle() string {
 
 // HashFromPath creates a hash from an image file at the given path
 func (imp Implementation) HashFromPath(path string) (imhash_interfaces.PerceptualHash, error) {
-	return imp.newHashFromFileWithImagick(path)
+	if imp.Config.UseImagickLib {
+		return imp.newHashFromFileWithImagickLib(path)
+	} else {
+		return imp.newHashFromFileWithImagick(path)
+	}
 }
 
 // HashFromString recreates a hash from a hash string
@@ -131,9 +137,38 @@ func (imp Implementation) newHashFromPreparedFile(path string) (imhash_interface
 func (imp Implementation) newHashFromFileWithImagick(sourcePath string) (imhash_interfaces.PerceptualHash, error) {
 	targetPath := filepath.Join(environment.WorkDir, uuid.New().String()+".png")
 	// see: http://www.imagemagick.org/Usage/filter/
-	output, err := exec.Command("convert", sourcePath, "-filter", "box", "-resize", "9x8!", targetPath).CombinedOutput()
+	output, err := exec.Command(imp.Config.ImagickExecutable, sourcePath, "-filter", "box", "-resize", "9x8!", targetPath).CombinedOutput()
 	if err != nil {
 		return nil, errors.New(string(output))
+	}
+	defer os.Remove(targetPath)
+	return imp.newHashFromPreparedFile(targetPath)
+}
+
+// newHashFromFileWithImagick creates a hash from an image file using the image magick convert utility
+func (imp Implementation) newHashFromFileWithImagickLib(sourcePath string) (imhash_interfaces.PerceptualHash, error) {
+	imagick.Initialize()
+	defer imagick.Terminate()
+
+	mw := imagick.NewMagickWand()
+	{
+		err := mw.ReadImage(sourcePath)
+		if err != nil {
+			return nil, err
+		}
+	}
+	{
+		err := mw.ResizeImage(9, 8, imagick.FILTER_BOX)
+		if err != nil {
+			return nil, err
+		}
+	}
+	targetPath := filepath.Join(environment.WorkDir, uuid.New().String()+".png")
+	{
+		err := mw.WriteImage(targetPath)
+		if err != nil {
+			return nil, err
+		}
 	}
 	defer os.Remove(targetPath)
 	return imp.newHashFromPreparedFile(targetPath)

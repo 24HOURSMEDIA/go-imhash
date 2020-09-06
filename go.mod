@@ -5,4 +5,5 @@ go 1.14
 require (
 	github.com/google/uuid v1.1.2
 	github.com/tmthrgd/go-popcount v0.0.0-20190904054823-afb1ace8b04f
+	gopkg.in/gographics/imagick.v3 v3.3.0
 )

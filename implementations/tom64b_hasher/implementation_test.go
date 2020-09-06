@@ -1,6 +1,9 @@
 package tom64b_hasher
 
-import "fmt"
+import (
+	"fmt"
+	"testing"
+)
 
 func ExampleDistance() {
 	img1 := "./../../resources/test1.jpg"
@@ -93,4 +96,22 @@ func ExampleDeserialize() {
 	// Output:
 	// 8c1e07e8f86864f8
 	// 30
+}
+
+func BenchmarkImplementation_HashFromPath_WithLib(b *testing.B) {
+	img1 := "./../../resources/test1.jpg"
+	service := Create()
+	service.Config.UseImagickLib = true
+	for i := 0; i < b.N; i++ {
+		service.HashFromPath(img1)
+	}
+}
+
+func BenchmarkImplementation_HashFromPath_WithUtility(b *testing.B) {
+	img1 := "./../../resources/test1.jpg"
+	service := Create()
+	service.Config.UseImagickLib = false
+	for i := 0; i < b.N; i++ {
+		service.HashFromPath(img1)
+	}
 }
