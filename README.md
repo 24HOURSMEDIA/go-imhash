@@ -22,11 +22,12 @@ import (
 )
 
 func main() {
-    // show hashed values and calculate distance
+    // show hashed values and calculate distance hasher := tom64b_hasher.Create()
+
     imgPath1 := "./image1.jpg"
     imgPath2 := "./image2.jpg"
-    hasher := tom64b_hasher.Create()
-	hash1, _ := hasher.HashFromPath(imgPath1)
+   
+    hash1, _ := hasher.HashFromPath(imgPath1)
     hash2, _ := hasher.HashFromPath(imgPath2)
     fmt.Println(hash1.String())
     fmt.Println(hash2.String())
