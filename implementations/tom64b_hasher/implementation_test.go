@@ -2,8 +2,26 @@ package tom64b_hasher
 
 import (
 	"fmt"
+	"github.com/24HOURSMEDIA/go-imhash/image_driver"
 	"testing"
 )
+
+func TestImplementation_HashFromPath(t *testing.T) {
+	img1 := "./../../resources/test1.jpg"
+	for _, driver := range image_driver.SupportedImageDrivers {
+		service := Create()
+		service.Config.ImageDriver = driver
+		hash, err := service.HashFromPath(img1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		expectedHash, _ := service.HashFromString("8c1e07e8f86864f8")
+		distance, _ := service.Distance(hash, expectedHash)
+		if hash.String() != expectedHash.String() {
+			t.Fatalf("Invalid hash result for driver %d, expected %s, got %s. Distance = %d", driver, expectedHash.String(), hash.String(), distance)
+		}
+	}
+}
 
 func ExampleDistance() {
 	img1 := "./../../resources/test1.jpg"
@@ -98,20 +116,38 @@ func ExampleDeserialize() {
 	// 30
 }
 
-func BenchmarkImplementation_HashFromPath_WithLib(b *testing.B) {
-	img1 := "./../../resources/test1.jpg"
+func BenchmarkImplementation_HashFromPath_WithImagickLib(b *testing.B) {
+	img1 := "./../../resources/large.jpg"
 	service := Create()
-	service.Config.UseImagickLib = true
+	service.Config.ImageDriver = image_driver.ImageDriverImagickLib
 	for i := 0; i < b.N; i++ {
-		service.HashFromPath(img1)
+		_, err := service.HashFromPath(img1)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
-func BenchmarkImplementation_HashFromPath_WithUtility(b *testing.B) {
-	img1 := "./../../resources/test1.jpg"
+func BenchmarkImplementation_HashFromPath_WithConvert(b *testing.B) {
+	img1 := "./../../resources/large.jpg"
 	service := Create()
-	service.Config.UseImagickLib = false
+	service.Config.ImageDriver = image_driver.ImageDriverImagickExecutable
 	for i := 0; i < b.N; i++ {
-		service.HashFromPath(img1)
+		_, err := service.HashFromPath(img1)
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkImplementation_HashFromPath_WithImaging(b *testing.B) {
+	img1 := "./../../resources/large.jpg"
+	service := Create()
+	service.Config.ImageDriver = image_driver.ImageDriverImaging
+	for i := 0; i < b.N; i++ {
+		_, err := service.HashFromPath(img1)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
 }

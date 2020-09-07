@@ -44,6 +44,7 @@ func main() {
 
 ```
 go test github.com/24HOURSMEDIA/go-imhash/implementations/tom64b_hasher
+go test github.com/24HOURSMEDIA/go-imhash/implementations/tom64b_hasher -bench=.
 ```
 
 ## Credits

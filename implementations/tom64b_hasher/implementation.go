@@ -6,8 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/24HOURSMEDIA/go-imhash/environment"
+	"github.com/24HOURSMEDIA/go-imhash/image_driver"
 	"github.com/24HOURSMEDIA/go-imhash/imhash_interfaces"
 	"github.com/24HOURSMEDIA/go-imhash/util"
+	"github.com/disintegration/imaging"
 	"github.com/google/uuid"
 	"github.com/tmthrgd/go-popcount"
 	"gopkg.in/gographics/imagick.v3/imagick"
@@ -56,11 +58,15 @@ func (imp Implementation) GetHandle() string {
 
 // HashFromPath creates a hash from an image file at the given path
 func (imp Implementation) HashFromPath(path string) (imhash_interfaces.PerceptualHash, error) {
-	if imp.Config.UseImagickLib {
+	switch imp.Config.ImageDriver {
+	case image_driver.ImageDriverImagickExecutable:
 		return imp.newHashFromFileWithImagickLib(path)
-	} else {
+	case image_driver.ImageDriverImagickLib:
 		return imp.newHashFromFileWithImagick(path)
+	case image_driver.ImageDriverImaging:
+		return imp.newHashFromFileWithImaging(path)
 	}
+	return nil, errors.New("unknown image driver")
 }
 
 // HashFromString recreates a hash from a hash string
@@ -169,7 +175,28 @@ func (imp Implementation) newHashFromFileWithImagickLib(sourcePath string) (imha
 		if err != nil {
 			return nil, err
 		}
+		defer os.Remove(targetPath)
 	}
-	defer os.Remove(targetPath)
+
+	return imp.newHashFromPreparedFile(targetPath)
+}
+
+// newHashFromFileWithImagick creates a hash from an image file using the image magick convert utility
+func (imp Implementation) newHashFromFileWithImaging(sourcePath string) (imhash_interfaces.PerceptualHash, error) {
+	srcImage, readErr := imaging.Open(sourcePath, imaging.AutoOrientation(true))
+	if readErr != nil {
+		return nil, readErr
+	}
+
+	dstImage := imaging.Resize(imaging.AdjustGamma(srcImage, 2.0), 9, 8, imaging.Box)
+	targetPath := filepath.Join(environment.WorkDir, uuid.New().String()+".png")
+	{
+		err := imaging.Save(dstImage, targetPath)
+		if err != nil {
+			return nil, err
+		}
+		defer os.Remove(targetPath)
+	}
+
 	return imp.newHashFromPreparedFile(targetPath)
 }
