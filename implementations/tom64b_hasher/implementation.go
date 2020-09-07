@@ -12,7 +12,6 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/google/uuid"
 	"github.com/tmthrgd/go-popcount"
-	"gopkg.in/gographics/imagick.v3/imagick"
 	"image"
 	"image/png"
 	"os"
@@ -60,13 +59,11 @@ func (imp Implementation) GetHandle() string {
 func (imp Implementation) HashFromPath(path string) (imhash_interfaces.PerceptualHash, error) {
 	switch imp.Config.ImageDriver {
 	case image_driver.ImageDriverImagickExecutable:
-		return imp.newHashFromFileWithImagickLib(path)
-	case image_driver.ImageDriverImagickLib:
 		return imp.newHashFromFileWithImagick(path)
 	case image_driver.ImageDriverImaging:
 		return imp.newHashFromFileWithImaging(path)
 	}
-	return nil, errors.New("unknown image driver")
+	return nil, errors.New(fmt.Sprintf("unknown image driver %d", imp.Config.ImageDriver))
 }
 
 // HashFromString recreates a hash from a hash string
@@ -152,43 +149,13 @@ func (imp Implementation) newHashFromFileWithImagick(sourcePath string) (imhash_
 }
 
 // newHashFromFileWithImagick creates a hash from an image file using the image magick convert utility
-func (imp Implementation) newHashFromFileWithImagickLib(sourcePath string) (imhash_interfaces.PerceptualHash, error) {
-	imagick.Initialize()
-	defer imagick.Terminate()
-
-	mw := imagick.NewMagickWand()
-	{
-		err := mw.ReadImage(sourcePath)
-		if err != nil {
-			return nil, err
-		}
-	}
-	{
-		err := mw.ResizeImage(9, 8, imagick.FILTER_BOX)
-		if err != nil {
-			return nil, err
-		}
-	}
-	targetPath := filepath.Join(environment.WorkDir, uuid.New().String()+".png")
-	{
-		err := mw.WriteImage(targetPath)
-		if err != nil {
-			return nil, err
-		}
-		defer os.Remove(targetPath)
-	}
-
-	return imp.newHashFromPreparedFile(targetPath)
-}
-
-// newHashFromFileWithImagick creates a hash from an image file using the image magick convert utility
 func (imp Implementation) newHashFromFileWithImaging(sourcePath string) (imhash_interfaces.PerceptualHash, error) {
 	srcImage, readErr := imaging.Open(sourcePath, imaging.AutoOrientation(true))
 	if readErr != nil {
 		return nil, readErr
 	}
 
-	dstImage := imaging.Resize(imaging.AdjustGamma(srcImage, 2.0), 9, 8, imaging.Box)
+	dstImage := imaging.Resize(imaging.AdjustGamma(srcImage, 2.2), 9, 8, imaging.Box)
 	targetPath := filepath.Join(environment.WorkDir, uuid.New().String()+".png")
 	{
 		err := imaging.Save(dstImage, targetPath)

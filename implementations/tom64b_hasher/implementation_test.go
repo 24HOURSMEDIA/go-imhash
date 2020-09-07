@@ -116,18 +116,6 @@ func ExampleDeserialize() {
 	// 30
 }
 
-func BenchmarkImplementation_HashFromPath_WithImagickLib(b *testing.B) {
-	img1 := "./../../resources/large.jpg"
-	service := Create()
-	service.Config.ImageDriver = image_driver.ImageDriverImagickLib
-	for i := 0; i < b.N; i++ {
-		_, err := service.HashFromPath(img1)
-		if err != nil {
-			b.Fatal(err)
-		}
-	}
-}
-
 func BenchmarkImplementation_HashFromPath_WithConvert(b *testing.B) {
 	img1 := "./../../resources/large.jpg"
 	service := Create()

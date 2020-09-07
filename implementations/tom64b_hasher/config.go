@@ -15,7 +15,7 @@ type Config struct {
 func NewConfig() Config {
 	cfg := Config{
 		// ImageDriver is the driver used for preprocessing images
-		ImageDriver: image_driver.ImageDriverImagickLib,
+		ImageDriver: image_driver.ImageDriverImagickExecutable,
 		// ImagickExecutable is the location of the Imagick executable
 		ImagickExecutable: "convert",
 	}
